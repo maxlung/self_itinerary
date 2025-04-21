@@ -1,0 +1,48 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | 日本旅行行程</title>
+	</head>
+	<body>
+		<header class="bg-white border-b border-rice-dark">
+			<div class="container mx-auto px-4 py-4">
+				<nav class="flex justify-between items-center">
+					<a href="/" class="text-2xl font-bold text-accent">🏯 日本旅行</a>
+					<div class="flex space-x-4">
+						<a href="/" class="hover:text-accent">首頁</a>
+					</div>
+				</nav>
+			</div>
+		</header>
+		<main class="container mx-auto px-4 py-8">
+			<slot />
+		</main>
+		<footer class="bg-rice-dark mt-8 py-6">
+			<div class="container mx-auto px-4 text-center text-ink-light">
+				<p>© {new Date().getFullYear()} 奕全旅行行程</p>
+			</div>
+		</footer>
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>

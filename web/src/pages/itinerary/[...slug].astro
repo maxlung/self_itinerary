@@ -1,0 +1,154 @@
+---
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import ItineraryCard from '../../components/ItineraryCard.astro';
+import QRShare from '../../components/QRShare.astro';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const itineraries = await getCollection('itinerary');
+  return itineraries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// 直接从Markdown中解析行程项目
+function parseMarkdownContent(entry: CollectionEntry<'itinerary'>) {
+  const rawContent = entry.body;
+  const scheduleItems = [];
+  
+  // 正则表达式匹配Markdown中的行程项目 - 改进版本
+  const schedulePattern = /### (\d{1,2}:\d{2}) (.*?)\n([\s\S]*?)(?=\n---|\n###|\n##|$)/gs;
+  
+  let match;
+  while ((match = schedulePattern.exec(rawContent)) !== null) {
+    const time = match[1].trim();
+    const place = match[2].trim();
+    
+    // 提取所有内容
+    const detailsText = match[3].trim();
+    
+    // 提取描述（第一行文本）
+    const descriptionMatch = detailsText.match(/>\s*(.*?)(?=\s*\n|$)/);
+    const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+    
+    // 单独提取地图链接
+    const mapMatch = detailsText.match(/📍\s*`([^`]+)`/);
+    const mapUrl = mapMatch ? mapMatch[1] : '';
+    
+    // 单独提取图片链接
+    const imageMatch = detailsText.match(/🖼️\s*`([^`]+)`/);
+    const imageUrl = imageMatch ? imageMatch[1] : '';
+    
+    // 调试
+    // console.log("原始文本:", detailsText);
+    // console.log("描述匹配:", descriptionMatch);
+    // console.log("地图匹配:", mapMatch);
+    // console.log("图片匹配:", imageMatch);
+    // console.log("解析结果:", {time, title: place, description, mapUrl, imageUrl});
+    
+    scheduleItems.push({
+      time,
+      title: place,
+      description,
+      mapUrl,
+      imageUrl
+    });
+  }
+  
+  return scheduleItems;
+}
+
+// 解析行程项目
+const scheduleItems = parseMarkdownContent(entry);
+
+// 获取当前页面URL
+const currentPath = `/itinerary/${entry.slug}`;
+---
+
+<Layout title={entry.data.title}>
+  <article class="max-w-4xl mx-auto">
+    <header class="mb-8">
+      <div class="relative h-64 md:h-80 rounded-lg overflow-hidden mb-6">
+        <img 
+          src={entry.data.cover} 
+          alt={entry.data.title} 
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-6 text-white">
+          <h1 class="text-2xl md:text-4xl font-bold mb-2">{entry.data.title}</h1>
+          <p class="text-rice">{entry.data.date}</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="itinerary-cards">
+      <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <span class="mr-2">🕘</span> 行程
+      </h2>
+      
+      <!-- 桌面版：两栏布局 -->
+      <div class="hidden md:grid md:grid-cols-[150px_1fr] md:gap-6">
+        {scheduleItems.map(item => (
+          <>
+            <div class="time-column pt-2">
+              <div class="bg-accent text-white p-2 rounded-md text-center font-bold">
+                {item.time}
+              </div>
+            </div>
+            <div class="content-column">
+              <ItineraryCard
+                time={item.time}
+                title={item.title}
+                description={item.description}
+                mapUrl={item.mapUrl}
+                imageUrl={item.imageUrl}
+              />
+            </div>
+          </>
+        ))}
+      </div>
+      
+      <!-- 手机版：单栏布局 -->
+      <div class="md:hidden space-y-6">
+        {scheduleItems.map(item => (
+          <ItineraryCard
+            time={item.time}
+            title={item.title}
+            description={item.description}
+            mapUrl={item.mapUrl}
+            imageUrl={item.imageUrl}
+          />
+        ))}
+      </div>
+    </div>
+
+    <QRShare url={currentPath} title="扫码分享此行程" />
+  </article>
+</Layout>
+
+<style>
+  /* 为时间线添加垂直连接线 */
+  @media (min-width: 768px) {
+    .time-column {
+      position: relative;
+    }
+    .time-column::after {
+      content: '';
+      position: absolute;
+      top: 40px;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background-color: theme('colors.accent-light');
+    }
+    .time-column:last-child::after {
+      display: none;
+    }
+  }
+</style> 

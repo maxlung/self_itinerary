@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import DayCard from '../components/DayCard.astro';
+
+const itineraries = await getCollection('itinerary');
+// 按日期排序
+const sortedItineraries = itineraries.sort((a, b) => 
+  new Date(a.data.date).getTime() - new Date(b.data.date).getTime()
+);
+
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<Layout title="日本旅行行程">
+	<div class="mx-auto max-w-4xl">
+		<h1 class="text-3xl md:text-4xl font-bold mb-8 text-center">🗾 日本旅行行程</h1>
+		<p class="text-center mb-10 text-lg">快樂出遊</p>
+		
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			{sortedItineraries.map((itinerary) => (
+				<DayCard
+					title={itinerary.data.title}
+					date={itinerary.data.date}
+					cover={itinerary.data.cover}
+					url={`/itinerary/${itinerary.slug}`}
+				/>
+			))}
+		</div>
+	</div>
+</Layout>

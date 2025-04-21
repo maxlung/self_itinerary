@@ -1,0 +1,84 @@
+---
+import { marked } from 'marked';
+
+interface Props {
+  time: string;
+  title: string;
+  description: string;
+  mapUrl?: string;
+  imageUrl?: string;
+}
+
+const { time, title, description, mapUrl, imageUrl } = Astro.props;
+
+// 将Markdown文本转换为HTML
+const descriptionHtml = description ? marked.parse(description) : '';
+---
+
+<div class="itinerary-card card mb-6 overflow-hidden">
+  <div 
+    class="card-header flex items-center gap-4 cursor-pointer" 
+    data-toggle-expand
+  >
+    <div class="time-badge bg-accent text-white p-2 rounded-md whitespace-nowrap">
+      {time}
+    </div>
+    <h3 class="font-bold text-lg md:text-xl m-0 flex-grow">{title}</h3>
+    <span class="expand-icon text-2xl transition-transform">⌄</span>
+  </div>
+  
+  <div class="card-content hidden mt-4 pt-4 border-t border-rice-dark overflow-hidden">
+    {description && (
+      <div class="description mb-4">
+        <blockquote class="markdown-content border-l-4 border-accent-light pl-4 py-2 bg-rice-dark/30 rounded">
+          <Fragment set:html={descriptionHtml} />
+        </blockquote>
+      </div>
+    )}
+    
+    {mapUrl && (
+      <div class="map-container mb-4 rounded overflow-hidden h-60">
+        <iframe
+          src={mapUrl}
+          width="100%"
+          height="100%"
+          style="border:0;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    )}
+    
+    {imageUrl && (
+      <div class="image-container mb-4">
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          class="w-full h-auto rounded" 
+          loading="lazy"
+        />
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  // 为所有行程卡片添加展开/收起功能
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggles = document.querySelectorAll('[data-toggle-expand]');
+    
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const card = toggle.closest('.itinerary-card');
+        const content = card?.querySelector('.card-content');
+        const icon = toggle.querySelector('.expand-icon');
+        
+        if (content) {
+          content.classList.toggle('hidden');
+          icon?.classList.toggle('rotate-180');
+        }
+      });
+    });
+  });
+</script> 

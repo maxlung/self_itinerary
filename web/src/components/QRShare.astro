@@ -1,0 +1,26 @@
+---
+import QRCode from 'qrcode';
+
+interface Props {
+  url: string;
+  title?: string;
+}
+
+const { url, title = '分享此页面' } = Astro.props;
+const fullUrl = new URL(url, Astro.site).toString();
+const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
+---
+
+<div class="qr-share mt-12 p-4 bg-rice-dark rounded-lg text-center">
+  <h3 class="text-lg font-medium mb-3">{title}</h3>
+  <div class="flex justify-center">
+    <img 
+      src={qrCodeDataUrl} 
+      alt="分享QR码" 
+      width="150" 
+      height="150" 
+      class="mx-auto bg-white p-2 rounded"
+    />
+  </div>
+  <p class="mt-2 text-sm text-ink-light">{fullUrl}</p>
+</div> 
