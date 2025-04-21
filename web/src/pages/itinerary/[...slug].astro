@@ -67,7 +67,10 @@ function parseMarkdownContent(entry: CollectionEntry<'itinerary'>) {
 const scheduleItems = parseMarkdownContent(entry);
 
 // 获取当前页面URL
-const currentPath = `/itinerary/${entry.slug}`;
+const baseUrl = import.meta.env.BASE_URL || '/self_itinerary';
+// 确保路径格式正确
+const formattedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+const currentPath = `${formattedBaseUrl}itinerary/${entry.slug}`;
 ---
 
 <Layout title={entry.data.title}>

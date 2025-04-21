@@ -7,9 +7,14 @@ interface Props {
 }
 
 const { title, date, cover, url } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL || '/self_itinerary';
+// 正确处理基础URL和路径的拼接，避免重复斜杠
+const formattedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+const formattedPath = url.startsWith('/') ? url.slice(1) : url;
+const fullUrl = `${formattedBaseUrl}${formattedPath}`;
 ---
 
-<a href={url} class="block no-underline">
+<a href={fullUrl} class="block no-underline">
   <div class="day-card card h-full transition-all hover:translate-y-[-4px]">
     <div class="card-image h-48 overflow-hidden rounded-t">
       <img 
